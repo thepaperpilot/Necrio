@@ -18,6 +18,10 @@ let user;
 let users = {};
 let state = play;
 
+let x = null // mouse X
+let y = null // mouse Y
+let mouseDown = 0
+
 document.getElementById('nameForm').addEventListener('submit', function(e) {
 	// Prevent page from refreshing
 	e.preventDefault()
@@ -26,10 +30,8 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 
 	let username
 
-	socket.emit('login', username = document.getElementById('name').value)
-
 	socket.on('init', (me) => {
-		console.log(user)
+		console.log(me)
 		user = me
 		let text = new Text(username + "\n▼", getTextStyle())
 		text.x = user.x
@@ -74,17 +76,59 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 		let keys = Object.keys(theirUsers)
 		for (let i = 0; i < keys.length; i++) {
 			let u = users[keys[i]] || user
+			// TODO handle minions being added and removed
 			for (let j = 0; j < u.minions.length; j++) {
 				u.minions[j].update(theirUsers[keys[i]].minions[j])
 			}
 		}
+
+		let x = 0, y = 0
+		for (let i = 0; i < user.minions.length; i++) {
+			x += user.minions[i].x
+			y += user.minions[i].y
+		}
+		x /= user.minions.length
+		y /= user.minions.length
+
+		stage.x = renderer.width/2;
+		stage.y = renderer.height/2;
+		stage.pivot.x = x;
+		stage.pivot.y = y;
+		stage.scale.x = stage.scale.y = Math.pow(ZOOM / user.minions.length, 0.5);
+
+		ui.x = renderer.width / 2;
+		ui.y = renderer.height / 2;
+		user.text.x = 0
+		user.text.y = -12 * stage.scale.x
+
+		keys = Object.keys(users)
+		for (let i = 0; i < keys.length; i++) {
+			let user = users[keys[i]]
+			let userx = 0, usery = 0
+			for (let i = 0; i < user.minions.length; i++) {
+				userx += user.minions[i].x
+				usery += user.minions[i].y
+			}
+			userx /= user.minions.length
+			usery /= user.minions.length
+			user.text.x = (userx - x) * stage.scale.x
+			user.text.y = ((usery - y) - 12) * stage.scale.y
+		}
+
+		minions.children.sort((a, b) => {
+			return a.y - b.y
+		})
 	})
+
+	socket.emit('login', username = document.getElementById('name').value)
 })
 
 // Create some basic objects
 let gameStage = new Container();
 let stage = new Container();
+let minions = new Container();
 let ui = new Container();
+stage.addChild(minions);
 gameStage.addChild(stage);
 gameStage.addChild(ui);
 stage.interactive = true;
@@ -99,6 +143,10 @@ renderer.resize(window.innerWidth, window.innerHeight);
 
 // Window stuff
 window.addEventListener("resize", resize);
+document.addEventListener('mousemove', onMouseUpdate, false);
+document.addEventListener('mouseenter', onMouseUpdate, false);
+document.addEventListener('mousedown', onMouseDown, false);
+document.addEventListener('mouseup', onMouseUp, false);
 
 // Load everything
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
@@ -178,7 +226,7 @@ function setup() {
 		g.lineTo(width + padding, i)
 	}
 
-	stage.addChild(g)
+	stage.addChildAt(g, 0)
 }
 
 function setupMinion(minion) {
@@ -190,7 +238,26 @@ function setupMinion(minion) {
 		this.x = this.sprite.x = minion.x
 		this.y = this.sprite.y = minion.y
 	};
-	stage.addChild(minion.sprite)
+	minions.addChild(minion.sprite)
+	/*let sprite = new Sprite(TextureCache.enemy1)
+	sprite.anchor.set(0.5, 1)
+	minion.update = function(minion) {
+		this.x = this.sprite.x = minion.x
+		this.y = this.sprite.y = minion.y
+	};
+	minion.sprite = new Container()
+	minion.sprite.x = minion.x
+	minion.sprite.y = minion.y
+	minion.sprite.addChild(sprite)
+	let g = new Graphics()
+	g.lineStyle(2, 0x242a33, 1)
+	g.moveTo( - minion.width / 2,  - minion.height / 2)
+	g.lineTo( + minion.width / 2,  - minion.height / 2)
+	g.lineTo( + minion.width / 2,  + minion.height / 2)
+	g.lineTo( - minion.width / 2,  + minion.height / 2)
+	g.lineTo( - minion.width / 2,  - minion.height / 2)
+	//minion.sprite.addChild(g)
+	minions.addChild(minion.sprite)*/
 }
 
 function gameLoop() {
@@ -202,40 +269,33 @@ function gameLoop() {
 }
 
 function play() {
-	let x = 0, y = 0
-	for (let i = 0; i < user.minions.length; i++) {
-		x += user.minions[i].x
-		y += user.minions[i].y
-	}
-	x /= user.minions.length
-	y /= user.minions.length
-	
-	stage.x = renderer.width/2;
-	stage.y = renderer.height/2;
-	stage.pivot.x = x;
-	stage.pivot.y = y;
-	stage.scale.x = stage.scale.y = Math.pow(ZOOM / user.minions.length, .5);
-
-	ui.x = renderer.width / 2;
-	ui.y = renderer.height / 2;
-	user.text.x = 0
-	user.text.y = -12 * stage.scale.x
-
-	let keys = Object.keys(users)
-	for (let i = 0; i < keys.length; i++) {
-		let user = users[keys[i]]
-		let userx = 0, usery = 0
-		for (let i = 0; i < user.minions.length; i++) {
-			userx += user.minions[i].x
-			usery += user.minions[i].y
-		}
-		userx /= user.minions.length
-		usery /= user.minions.length
-		user.text.x = (userx - x) * stage.scale.x
-		user.text.y = ((usery - y) - 12) * stage.scale.y
-	}
+	socket.emit('heartbeat')
 }
 
 function resize() {
 	renderer.resize(window.innerWidth, window.innerHeight);
+}
+
+function onMouseUpdate(e) {
+	x = e.pageX
+	y = e.pageY
+	if (!!mouseDown) updateServer()
+}
+
+function onMouseDown() {
+	mouseDown++
+	updateServer()
+}
+
+function onMouseUp() {
+	mouseDown--
+	updateServer()
+}
+
+function updateServer() {
+	socket.emit('update', 
+		x - window.innerWidth / 2, 
+		y - window.innerHeight / 2 + 8 * stage.scale.y, 
+		!!mouseDown
+	)
 }

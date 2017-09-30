@@ -13,9 +13,21 @@ let users = {};
 
 io.on('connection', function(socket){
   socket.on('login', function(name){
-  	let x = Math.random() * 200
-  	let y = Math.random() * 100
-  	socket.emit('init', x, y)
+  	let x = Math.random() * 2000
+  	let y = Math.random() * 1000
+  	socket.emit('init', x, y, [
+  	{
+  		x: x + Math.random() * 10 - 5,
+  		y: y + Math.random() * 10 - 5
+  	},
+  	{
+  		x: x + Math.random() * 10 - 5,
+  		y: y + Math.random() * 10 - 5
+  	},
+  	{
+  		x: x + Math.random() * 10 - 5,
+  		y: y + Math.random() * 10 - 5
+  	}])
   	let keys = Object.keys(users)
   	for (let i = 0; i < keys.length; i++) {
   		socket.emit('add player', keys[i], users[keys[i]])

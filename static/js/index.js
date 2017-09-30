@@ -91,6 +91,9 @@ renderer.view.style.display = "block";
 renderer.autoResize = true;
 renderer.resize(window.innerWidth, window.innerHeight);
 
+// Window stuff
+window.addEventListener("resize", resize);
+
 // Load everything
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 loader
@@ -163,4 +166,8 @@ function play() {
 		user.text.x = (userx - x) * stage.scale.x
 		user.text.y = (usery - y) * stage.scale.y
 	}
+}
+
+function resize() {
+	renderer.resize(window.innerWidth, window.innerHeight);
 }

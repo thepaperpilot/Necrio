@@ -1,0 +1,9 @@
+{
+  "name": "necrio",
+  "version": "0.0.1",
+  "description": "Right Click to Necromance mixed with agar.io",
+  "dependencies": {
+    "express": "^4.16.1",
+    "socket.io": "^2.0.3"
+  }
+}

@@ -14,11 +14,9 @@ let Container = PIXI.Container,
 let ZOOM = 100;
 
 let socket = io();
-let username;
-let usertext;
+let user;
 let users = {};
 let state = play;
-let minions = [];
 
 document.getElementById('nameForm').addEventListener('submit', function(e) {
 	// Prevent page from refreshing
@@ -26,48 +24,63 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 	
 	document.getElementById('intro').classList.add('submitted')
 
+	let username
+
 	socket.emit('login', username = document.getElementById('name').value)
 
-	socket.on('init', (x, y, startingMinions) => {
-		let text = new Text(username, {fill: '#'+(Math.random()*0xFFFFFF<<0).toString(16), align: 'center', strokeThickness: 1})
-		text.x = x
-		text.y = y
-		stage.addChild(text)
-		usertext = text;
-		stage.position.x = renderer.width/2;
-		stage.position.y = renderer.height/2;
-		stage.pivot.x = x;
-		stage.pivot.y = y;
-		gameLoop();
-		console.log(username)
-		for (let i = 0; i < startingMinions.length; i++) {
-			minions.push(new Minion(startingMinions[i].x, startingMinions[i].y))
+	socket.on('init', (me) => {
+		user = me
+		console.log(user)
+		let text = new Text(username, getTextStyle())
+		text.x = user.x
+		text.y = user.y
+		text.alpha = 0.9
+		ui.addChild(text)
+		user.text = text;
+		for (let i = 0; i < user.minions.length; i++) {
+			user.minions[i].sprite = new Sprite(TextureCache.enemy1)
+			user.minions[i].sprite.x = user.minions[i].x
+			user.minions[i].sprite.y = user.minions[i].y
+			stage.addChild(user.minions[i].sprite)
 		}
+		gameLoop();
 	})
 
 	socket.on('add player', (id, user) => {
+		console.log('added', user.name)
 		users[id] = user
-		let text = new Text(user.name, {fill: '#'+(Math.random()*0xFFFFFF<<0).toString(16), align: 'center', strokeThickness: 1})
+		let text = new Text(user.name, getTextStyle())
 		text.x = user.x
 		text.y = user.y
+		text.alpha = 0.9
 		user.text = text
-		stage.addChild(text)
-		console.log('added', user.name)
+		for (let i = 0; i < user.minions.length; i++) {
+			user.minions[i].sprite = new Sprite(TextureCache.enemy1)
+			user.minions[i].sprite.x = user.minions[i].x
+			user.minions[i].sprite.y = user.minions[i].y
+			stage.addChild(user.minions[i].sprite)
+		}
+		ui.addChild(text)
 	})
 
 	socket.on('remove player', (id) => {
-		console.log('removed', users[id].name)
-		stage.removeChild(users[id].text)
-		delete users[id]
+		if (users[id]) {
+			console.log('removed', users[id].name)
+			ui.removeChild(users[id].text)
+			for (let i = 0; i < users[id].minions.length; i++) {
+				stage.removeChild(users[id].minions[i].sprite)
+			}
+			delete users[id]
+		}
 	})
 })
 
-document.getElementById('intro').classList.remove('submitted')
-document.getElementById('name').disabled = false
-document.getElementById('name').focus()
-
 // Create some basic objects
+let gameStage = new Container();
 let stage = new Container();
+let ui = new Container();
+gameStage.addChild(stage);
+gameStage.addChild(ui);
 stage.interactive = true;
 let renderer = autoDetectRenderer(1, 1, {antialias: true, transparent: true});
 document.body.appendChild(renderer.view);
@@ -78,32 +91,76 @@ renderer.view.style.display = "block";
 renderer.autoResize = true;
 renderer.resize(window.innerWidth, window.innerHeight);
 
+// Load everything
+PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
+loader
+	// Images
+	.add("enemy1", "img/placeholder.png")
+	// Call setup after loading
+	.load(setup);
+
+function getTextStyle() {
+	return {
+		fill: '#'+(Math.random()*0xFFFFFF<<0).toString(16), 
+		align: 'center', 
+		stroke: '#fff',
+		strokeThickness: 4,
+	    //dropShadow: true,
+	    //dropShadowColor: '#000000',
+	    //dropShadowBlur: 2,
+	    //dropShadowAngle: Math.PI / 6,
+	    //dropShadowDistance: 6,
+		fontSize: 28,
+		fontWeight: 'bold'
+	}
+}
+
+function setup() {
+	document.getElementById('intro').classList.remove('submitted')
+	document.getElementById('loading').classList.add('submitted')
+	document.getElementById('name').disabled = false
+	document.getElementById('name').focus()
+}
+
 function gameLoop() {
 	requestAnimationFrame(gameLoop);
 
 	state();
 
-	renderer.render(stage);
+	renderer.render(gameStage);
 }
 
 function play() {
 	let x = 0, y = 0
-	for (let i = 0; i < minions.length; i++) {
-		x += minions[i].x
-		y += minions[i].y
+	for (let i = 0; i < user.minions.length; i++) {
+		x += user.minions[i].x
+		y += user.minions[i].y
 	}
-	x /= minions.length
-	y /= minions.length
-	stage.position.x = renderer.width/2;
-	stage.position.y = renderer.height/2;
-	stage.pivot.x = x;
-	stage.pivot.y = y;
-	stage.scale.x = stage.scale.y = Math.pow(ZOOM / minions.length, .5);
-}
+	x /= user.minions.length
+	y /= user.minions.length
+	
+	stage.x = /*ui.x =*/ renderer.width/2;
+	stage.y = /*ui.y =*/ renderer.height/2;
+	stage.pivot.x /*= ui.pivot.x*/ = x;
+	stage.pivot.y /*= ui.pivot.y*/ = y;
+	stage.scale.x = stage.scale.y = Math.pow(ZOOM / user.minions.length, .5);
 
-function Minion(x, y) {
-	this.sprite = new Sprite.fromImage('img/placeholder.png')
-	this.x = this.sprite.x = x
-	this.y = this.sprite.y = y
-	stage.addChild(this.sprite)
+	ui.x = renderer.width / 2;
+	ui.y = renderer.height / 2;
+	user.text.x = 0
+	user.text.y = 0
+
+	let keys = Object.keys(users)
+	for (let i = 0; i < keys.length; i++) {
+		let user = users[keys[i]]
+		let userx = 0, usery = 0
+		for (let i = 0; i < user.minions.length; i++) {
+			userx += user.minions[i].x
+			usery += user.minions[i].y
+		}
+		userx /= user.minions.length
+		usery /= user.minions.length
+		user.text.x = (userx - x) * stage.scale.x
+		user.text.y = (usery - y) * stage.scale.y
+	}
 }

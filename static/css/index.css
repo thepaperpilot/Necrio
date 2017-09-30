@@ -16,19 +16,22 @@
   opacity: 0;
 }
 
-.blackout form {
+.blackout form, .blackout p {
   position: relative;
   display: block;
+  color: #fff;
+  font-size: x-large;
   width: 600px;
   max-width: 90%;
   margin: auto;
+  text-align: center;
 }
 
 .blackout input {
   border: none;
   background: none;
-  color: #fff;
   border-bottom: 1px solid #fff;
+  color: #fff;
   width: 100%;
   font-size: x-large;
 }

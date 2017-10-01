@@ -10,6 +10,7 @@
   -webkit-transition: opacity 0.5s;
   transition: opacity 0.5s;
   z-index: 1;
+  flex-wrap: wrap;
 }
 
 .blackout.submitted {
@@ -17,7 +18,9 @@
 }
 
 .blackout form, .blackout p {
-  position: relative;
+  top: 50%;
+  left: 0%;
+  right: 0%;
   display: block;
   color: #fff;
   font-size: x-large;
@@ -36,10 +39,19 @@
   font-size: x-large;
 }
 
-.submitted input {
+.submitted {
   cursor: default;
+  pointer-events: none;
 }
 
 .blackout input::placeholder {
+  font-style: italic;
+}
+
+.title {
+  font-size: 8em !important;
+}
+
+.subtitle {
   font-style: italic;
 }

@@ -181,7 +181,7 @@ function step() {
       if (m1.user !== m2.user && !m1.target && Math.abs(vx) < comWidth + m1.aggro && Math.abs(vy) < comHeight + m1.aggro) {
         m1.target = minKeys[j]
       }
-      if (m1.user !== m2.user && !m1.target && Math.abs(vx) < comWidth + m2.aggro && Math.abs(vy) < comHeight + m2.aggro) {
+      if (m1.user !== m2.user && !m2.target && Math.abs(vx) < comWidth + m2.aggro && Math.abs(vy) < comHeight + m2.aggro) {
         m2.target = minKeys[i]
       }
       if (Math.abs(vx) < comWidth && Math.abs(vy) < comHeight) {

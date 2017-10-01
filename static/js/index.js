@@ -223,6 +223,14 @@ PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 loader
 	// Images
 	.add("enemy1", "img/skeli.png")
+	.add("enemy1_NE", "img/skelly_NE.png")
+	.add("enemy1_NW", "img/skelly_NW.png")
+	.add("enemy1_SE", "img/skelly_SE.png")
+	.add("enemy1_SW", "img/skelly_SW.png")
+	.add("enemy1_E", "img/skelly_east.png")
+	.add("enemy1_N", "img/skelly_north.png")
+	.add("enemy1_S", "img/skelly_south.png")
+	.add("enemy1_W", "img/skelly_west.png")
 	.add("spark", "img/spark.png")
 	// Call setup after loading
 	.load(setup);
@@ -253,6 +261,7 @@ function setup() {
 function generateColoredTexture(string, color) {
 	let temp = new Container()
 	temp.addChild(new Sprite(TextureCache[string]))
+	console.log(TextureCache, string)
 	let temp2 = autoDetectRenderer(TextureCache[string].orig.width, TextureCache[string].orig.height);
 	temp2.render(temp)
 	let pixels = temp2.plugins.extract.pixels(temp)
@@ -325,6 +334,38 @@ function setupMinion(minion, color) {
 	minion.update = function(minion) {
 		this.x = this.sprite.x = minion.x
 		this.y = this.sprite.y = minion.y
+		let angle = Math.atan2(minion.vy, minion.vx)
+	    if (minion.vx < 0 && minion.vy >= 0) {
+	        angle = Math.PI - angle;
+	    }
+	    if (minion.vx <= 0 && minion.vy < 0) {
+	        angle += Math.PI;
+	    }
+	    if (minion.vx > 0 && minion.vy <= 0) {
+	        angle = (Math.PI * 2) - angle;
+	    }
+		let texture = minion.sprite
+		angle = (angle * 180 / Math.PI) % 360
+		if (angle < 22.5) {
+			texture += "_E"
+		} else if (angle < 67.5) {
+			texture += "_NE"
+		} else if (angle < 112.5) {
+			texture += "_N"
+		} else if (angle < 157.5) {
+			texture += "_NW"
+		} else if (angle < 202.5) {
+			texture += "_W"
+		} else if (angle < 247.5) {
+			texture += "_SW"
+		} else if (angle < 292.5) {
+			texture += "_S"
+		} else if (angle < 337.5) {
+			texture += "_SE"
+		}
+		if (!TextureCache[texture + color])
+			generateColoredTexture(texture, color)
+		this.sprite.setTexture(TextureCache[texture + color])
 	};
 	if (debug) {
 		let g = new Graphics()

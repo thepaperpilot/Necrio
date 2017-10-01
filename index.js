@@ -56,7 +56,7 @@ io.on('connection', function(socket){
   socket.on('disconnect', function() {
     if (!users[socket.id]) return
 
-  	removePlayer()
+  	removePlayer(socket.id)
   })
 });
 
@@ -218,7 +218,7 @@ function step() {
     m1.y = Math.min(Math.max(m1.y, 0), HEIGHT)
     if (m1.target) {
       m1.attackTime++
-      if (m1.attackTime >= m1.attackDuration) {
+      if (m1.attackTime >= m1.attackDuration && users[m1.user] && users[minions[m1.target].user]) {
         m1.attackTime = 0
         minions[m1.target].health -= m1.damage
         io.emit('attack', minions[m1.target].user, m1.target, users[m1.user].color)

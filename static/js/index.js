@@ -122,12 +122,13 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 		for (let i = 0; i < keys.length; i++) {
 			let user = users[keys[i]]
 			let userx = 0, usery = 0
-			for (let i = 0; i < user.minions.length; i++) {
-				userx += user.minions[i].x
-				usery += user.minions[i].y
+			let minKeys = Object.keys(user.minions)
+			for (let i = 0; i < minKeys.length; i++) {
+				userx += user.minions[minKeys[i]].x
+				usery += user.minions[minKeys[i]].y
 			}
-			userx /= user.minions.length
-			usery /= user.minions.length
+			userx /= minKeys.length
+			usery /= minKeys.length
 			user.text.x = (userx - x) * stage.scale.x
 			user.text.y = ((usery - y) - 12) * stage.scale.y
 		}

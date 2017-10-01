@@ -24,7 +24,7 @@ let x = null // mouse X
 let y = null // mouse Y
 let mouseDown = 0
 
-let debug = null//*/ new Graphics()
+let debug = /*null//*/ new Graphics()
 
 document.getElementById('nameForm').addEventListener('submit', function(e) {
 	// Prevent page from refreshing
@@ -125,8 +125,21 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 			let u = users[keys[i]] || user
 			let minKeys = Object.keys(u.minions)
 			for (let j = 0; j < minKeys.length; j++) {
-				// TODO handling added or removed minions
-				u.minions[minKeys[j]].update(theirUsers[keys[i]].minions[minKeys[j]])
+				if (!theirUsers[keys[i]].minions[minKeys[j]]) {
+					// remove enemy
+					stage.removeChild(u.minions[minKeys[j]].sprite)
+					delete u.minions[minKeys[j]]
+				} else {
+					u.minions[minKeys[j]].update(theirUsers[keys[i]].minions[minKeys[j]])
+				}
+			}
+			minKeys = Object.keys(theirUsers[keys[i]].minions)
+			for (let j = 0; j < minKeys.length; j++) {
+				if (!u.minions[minKeys[j]]) {
+					// add enemy
+					setupMinion(theirUsers[keys[i]].minions[minKeys[j]], u.color)
+					u.minions[minKeys[j]] = theirUsers[keys[i]].minions[minKeys[j]]
+				}
 			}
 		}
 
@@ -313,6 +326,15 @@ function setupMinion(minion, color) {
 		this.x = this.sprite.x = minion.x
 		this.y = this.sprite.y = minion.y
 	};
+	if (debug) {
+		let g = new Graphics()
+		g.moveTo(-minion.width / 2, -minion.height / 2)
+		g.lineTo(-minion.width / 2, minion.height / 2)
+		g.lineTo(minion.width / 2, minion.height / 2)
+		g.lineTo(minion.width / 2, -minion.height / 2)
+		g.lineTo(-minion.width / 2, -minion.height / 2)
+		minion.sprite.addChild(g)
+	}
 	minions.addChild(minion.sprite)
 }
 

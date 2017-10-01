@@ -175,7 +175,7 @@ window.addEventListener("resize", resize);
 PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
 loader
 	// Images
-	.add("enemy1", "img/placeholder.png")
+	.add("enemy1", "img/skeli.png")
 	.add("spark", "img/spark.png")
 	// Call setup after loading
 	.load(setup);
@@ -236,7 +236,8 @@ function generateColoredTexture(string, color) {
 	temp2.render(temp)
 	let pixels = temp2.plugins.extract.pixels(temp)
 
-	// Untested, I just wrote this to give you a start
+	// Pixel to get replaced
+	// Find this by logging pixels and looking at the pixel data
 	let specialPixel = [116, 116, 116, 255] // 0 - 255
 
 	for (let i = 0; i < pixels.length; i += 4) {
@@ -270,7 +271,6 @@ function generateColoredTexture(string, color) {
 
 	ctx.putImageData(pix, 0, 0);
 	TextureCache[string + color] = Texture.fromCanvas(canvas);
-	//TextureCache[string + color] = Texture.fromImage('data:image/png;base64,' + btoa(String.fromCharCode.apply(null, pixels)))
 }
 
 function setupMinion(minion, color) {

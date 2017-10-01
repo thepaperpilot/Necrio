@@ -13,8 +13,8 @@ let users = {};
 let minions = []
 let numMinions = 0
 
-let WIDTH = 200;
-let HEIGHT = 100;
+let WIDTH = 2000;
+let HEIGHT = 1000;
 let SPEED = 0.1;
 let MAX_VELOCITY = 2;
 let LEADER_WEIGHT = 10;

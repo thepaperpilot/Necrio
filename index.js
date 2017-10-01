@@ -13,6 +13,7 @@ let users = {};
 let minions = []
 let numMinions = 0
 
+let PORT = 3000;
 let WIDTH = 280;
 let HEIGHT = 180;
 let SPEED = 0.1;
@@ -60,8 +61,8 @@ io.on('connection', function(socket){
   })
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+http.listen(PORT, function(){
+  console.log('listening on *:' + PORT);
   setInterval(step, 1000 / 60) // 60 times a second
   setInterval(spawnNPC, 1000 / 0.1) // 0.1 times a second / Once every 10 seconds
   //setInterval(regroup, 1000 / 0.5) // 0.5 times a second / Once every 2 seconds
@@ -250,7 +251,8 @@ function step() {
 }
 
 function spawnNPC() {
-  if (Object.keys(users).length < USER_FILL) {
+  let keys = Object.keys(users)
+  if (keys.length > 0 && keys.length < USER_FILL) {
     let id = Math.floor(Math.random() * 10000000)
     let user = new User(id, "")
     users[id] = user
@@ -261,13 +263,18 @@ function spawnNPC() {
     user.y = Math.random() - 0.5
   }
 
-  let keys = Object.keys(users)
+  let players = false
   for (let i = 0; i < keys.length; i++) {
     let user = users[keys[i]]
     if (user.npc) {
       user.x = Math.random() - 0.5
       user.y = Math.random() - 0.5
-    }
+    } else players = true
+  }
+
+  if (!players) {
+    users = {}
+    minions = []
   }
 }
 

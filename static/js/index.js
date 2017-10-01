@@ -37,7 +37,7 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 	socket.on('init', (me) => {
 		console.log(me)
 		user = me
-		let text = new Text(username + "\n▼", getTextStyle(user.color))
+		let text = new Text(user.name ? user.name + "\n▼" : '', getTextStyle(user.color))
 		text.x = user.x
 		text.y = user.y
 		text.anchor.set(0.5,1)
@@ -62,7 +62,7 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 	socket.on('add player', (id, user) => {
 		console.log('added', user.name)
 		users[id] = user
-		let text = new Text(user.name + "\n▼", getTextStyle(user.color))
+		let text = new Text(user.name ? user.name + "\n▼" : '', getTextStyle(user.color))
 		text.x = user.x
 		text.y = user.y
 		text.anchor.set(0.5,1)
@@ -140,11 +140,12 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 		if (!!mouseDown) updateServer()
 	})
 
-	socket.on('attack', (userId, minionId) => {
+	socket.on('attack', (userId, minionId, color) => {
 		let u = users[userId] || user
+		if (!u) return
 		let minion = u.minions[minionId]
 		if (minion)
-			createEmitter(u.color, minion.x, minion.y)
+			createEmitter(color, minion.x, minion.y)
 	})
 
 	socket.emit('login', username = document.getElementById('name').value)
@@ -466,6 +467,7 @@ function scalarProjection(minionx, miniony) {
 
 // https://stackoverflow.com/questions/21646738/convert-hex-to-rgba
 function hexToRgbA(hex){
+	console.log(hex)
     var c;
     if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
         c= hex.substring(1).split('');
@@ -475,7 +477,8 @@ function hexToRgbA(hex){
         c= '0x'+c.join('');
         return [(c>>16)&255, (c>>8)&255, c&255, 255];
     }
-    throw new Error('Bad Hex');
+    //throw new Error('Bad Hex');
+    return [0, 0, 0, 255]
 }
 
 //Returns the array in hue (0..360), saturation (0..100), value (0..100) alpha form.

@@ -19,10 +19,12 @@ let SPEED = 0.1;
 let MAX_VELOCITY = 2;
 let LEADER_WEIGHT = 10;
 let WEIGHT_MOD = 4;
-let STARTING_MINIONS = 10;
+let STARTING_MINIONS = 4;
+let USER_FILL = 10;
 
 io.on('connection', function(socket){
   socket.on('login', function(name){
+    name = name || "Lazy person #" + Math.floor(Math.random() * 1000)
     let user = new User(socket.id, name)
   	socket.emit('init', user)
   	let keys = Object.keys(users)
@@ -64,7 +66,8 @@ io.on('connection', function(socket){
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
-  setInterval(step, 1000 / 60)
+  setInterval(step, 1000 / 60) // 60 times a second
+  setInterval(spawnNPC, 1000 / 0.05) // 0.05 times a second / Once every 20 seconds
 });
 
 function User(id, name) {
@@ -205,7 +208,7 @@ function step() {
       if (m1.attackTime >= m1.attackDuration) {
         m1.attackTime = 0
         minions[m1.target].health -= m1.damage
-        io.emit('attack', minions[m1.target].user, m1.target)
+        io.emit('attack', minions[m1.target].user, m1.target, users[m1.user].color)
         if (minions[m1.target].health <= 0) {
           m1.target = null
           // TODO reviving minions
@@ -220,5 +223,14 @@ function step() {
       io.to(keys[i]).emit("update", users);
       users[keys[i]].updated = false;
     }
+  }
+}
+
+function spawnNPC() {
+  if (Object.keys(users).length < USER_FILL) {
+    let id = Math.floor(Math.random() * 10000000)
+    let user = new User(id, "")
+    users[id] = user
+    io.emit('add player', id, user)
   }
 }

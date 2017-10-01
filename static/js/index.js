@@ -29,7 +29,7 @@ let debug = null//*/ new Graphics()
 document.getElementById('nameForm').addEventListener('submit', function(e) {
 	// Prevent page from refreshing
 	e.preventDefault()
-	
+
 	document.getElementById('intro').classList.add('submitted')
 
 	let username
@@ -182,8 +182,8 @@ loader
 
 function getTextStyle(color) {
 	return {
-		fill: color, 
-		align: 'center', 
+		fill: color,
+		align: 'center',
 		stroke: '#fff',
 		strokeThickness: 4,
 	    //dropShadow: true,
@@ -236,14 +236,15 @@ function generateColoredTexture(string, color) {
 	temp2.render(temp)
 	let pixels = temp2.plugins.extract.pixels(temp)
 
+  /*
 	// Pixel to get replaced
 	// Find this by logging pixels and looking at the pixel data
-	let specialPixel = [116, 116, 116, 255] // 0 - 255
+	let specialPixel = [229, 229, 229, 255] // 0 - 255
 
 	for (let i = 0; i < pixels.length; i += 4) {
-		if (pixels[i] === specialPixel[0] && 
-			pixels[i + 1] === specialPixel[1] && 
-			pixels[i + 2] === specialPixel[2] && 
+		if (pixels[i] === specialPixel[0] &&
+			pixels[i + 1] === specialPixel[1] &&
+			pixels[i + 2] === specialPixel[2] &&
 			pixels[i + 3] === specialPixel[3]) {
 
 			let rgb = hexToRgbA(color)
@@ -251,6 +252,26 @@ function generateColoredTexture(string, color) {
 			pixels[i + 1] = rgb[1]
 			pixels[i + 2] = rgb[2]
 			pixels[i + 3] = rgb[3]
+		}
+	}
+  */
+
+  // Grayscale colorizer
+	for (let i = 0; i < pixels.length; i += 4) {
+		if (pixels[i] === pixels[i+1] &&
+			pixels[i] === pixels[i+2] &&
+			pixels[i + 3] !== 0) {
+
+			let rgb = hexToRgbA(color)
+      let colorHsv = rgbAToHsvA(rgb)
+      let pixelHsv = rgbAToHsvA([pixels[i], pixels[i+1], pixels[i+2], pixels[i+3]]);
+
+      let targetHsv = [colorHsv[0], colorHsv[1], pixelHsv[2], pixelHsv[3]];
+      let targetRgb = hsvAToRgbA(targetHsv);
+			pixels[i] = targetRgb[0]
+			pixels[i + 1] = targetRgb[1]
+			pixels[i + 2] = targetRgb[2]
+			pixels[i + 3] = targetRgb[3]
 		}
 	}
 
@@ -288,7 +309,7 @@ function setupMinion(minion, color) {
 }
 
 function createEmitter(color, x, y) {
-	let emitter = new Emitter(stage, 
+	let emitter = new Emitter(stage,
 	[TextureCache.spark],
 	{
 		"alpha": {
@@ -357,7 +378,7 @@ function play() {
 	let now = Date.now()
 	let delta = (now - elapsed) * 0.001
 	elapsed = now;
-	
+
 	for (let i = 0; i < emitters.length; i++) {
 		emitters[i].update(delta);
 	}
@@ -384,7 +405,7 @@ function onMouseUp() {
 }
 
 function updateServer() {
-	//let dx = scalarProjection(user.minions.m0.x - stage.pivot.x, 
+	//let dx = scalarProjection(user.minions.m0.x - stage.pivot.x,
 	//	user.minions.m0.y - stage.pivot.y)
 	let keys = Object.keys(user.minions)
 	let dx = user.minions[keys[0]].x - (stage.pivot.x + x / stage.scale.x)
@@ -397,11 +418,11 @@ function updateServer() {
 		debug.lineTo(x, y)
 		debug.lineStyle(1, 0x000088, 1)
     	debug.moveTo(0, 0)
-    	debug.lineTo((user.minions[keys[0]].x - stage.pivot.x) * stage.scale.x, 
+    	debug.lineTo((user.minions[keys[0]].x - stage.pivot.x) * stage.scale.x,
     		(user.minions[keys[0]].y - stage.pivot.y) * stage.scale.y)
 	}
 	for (let i = 1; i < keys.length; i++) {
-		/*let temp = scalarProjection(user.minions[keys[i]].x - stage.pivot.x, 
+		/*let temp = scalarProjection(user.minions[keys[i]].x - stage.pivot.x,
 			user.minions[keys[i]].y - stage.pivot.y)
 		if (temp > dx) {
 			leader = keys[i]
@@ -416,19 +437,19 @@ function updateServer() {
 		}
 		if (debug) {
 	    	debug.moveTo(0, 0)
-	    	debug.lineTo((user.minions[keys[i]].x - stage.pivot.x) * stage.scale.x, 
+	    	debug.lineTo((user.minions[keys[i]].x - stage.pivot.x) * stage.scale.x,
 	    		(user.minions[keys[i]].y - stage.pivot.y) * stage.scale.y)
 	    }
 	}
 	if (debug) {
 		debug.lineStyle(2, 0x008800, 1)
     	debug.moveTo(0, 0)
-    	debug.lineTo((user.minions[leader].x - stage.pivot.x) * stage.scale.x, 
+    	debug.lineTo((user.minions[leader].x - stage.pivot.x) * stage.scale.x,
     		(user.minions[leader].y - stage.pivot.y) * stage.scale.y)
     }
-	socket.emit('update', 
-		x / stage.scale.x - (user.minions[leader].x - stage.pivot.x), 
-		y / stage.scale.y - (user.minions[leader].y - stage.pivot.y), 
+	socket.emit('update',
+		x / stage.scale.x - (user.minions[leader].x - stage.pivot.x),
+		y / stage.scale.y - (user.minions[leader].y - stage.pivot.y),
 		!!mouseDown,
 		leader
 	)
@@ -454,4 +475,73 @@ function hexToRgbA(hex){
         return [(c>>16)&255, (c>>8)&255, c&255, 255];
     }
     throw new Error('Bad Hex');
+}
+
+//Returns the array in hue (0..360), saturation (0..100), value (0..100) alpha form.
+function rgbAToHsvA(rgb){
+  var rPrime = rgb[0]*1.0/255;
+  var gPrime = rgb[1]*1.0/255;
+  var bPrime = rgb[2]*1.0/255;
+  var cMax = Math.max(rPrime, gPrime, bPrime);
+  var cMin = Math.min(rPrime, gPrime, bPrime);
+  var delta = cMax - cMin;
+
+  var hue;
+  if(delta === 0){
+    hue = 0;
+  }
+  else if(cMax === rPrime){
+    hue = 60*( ((gPrime - bPrime) / delta)%6);
+  }
+  else if(cMax === gPrime){
+    hue = 60*((bPrime - rPrime)/delta +2);
+  }
+  else{
+    hue = 60*((rPrime - gPrime)/delta +4);
+  }
+
+  var saturation;
+  if(cMax === 0){
+    saturation = 0;
+  }
+  else{
+    saturation = delta/cMax;
+  }
+
+  var value = cMax;
+
+  return [toInt(hue), toInt(saturation*100), toInt(value*100), rgb[3]];
+}
+
+function hsvAToRgbA(hsv){
+  var c = (hsv[1]*hsv[2])/100.0;
+  var x = c*(1- Math.abs((hsv[0]/60.0)%2 - 1));
+  var m = hsv[2]/100.0 - c;
+
+  var rgbPrime;
+
+  if(hsv[0] < 60){
+    rgbPrime = [c,x,0];
+  }
+  else if(hsv[0] >= 60 && hsv[0] < 120){
+    rgbPrime = [x,c,0];
+  }
+  else if(hsv[0] >= 120 && hsv[0] < 180){
+    rgbPrime = [0,c,x];
+  }
+  else if(hsv[0] >= 180 && hsv[0] < 240){
+    rgbPrime = [0,x,c];
+  }
+  else if(hsv[0] >= 240 && hsv[0] < 300){
+    rgbPrime = [x,0,c];
+  }
+  else{
+    rgbPrime = [c,0,x];
+  }
+
+  return [toInt((rgbPrime[0]+m)*255),toInt((rgbPrime[1]+m)*255),toInt((rgbPrime[2]+m)*255),hsv[3]]
+}
+
+function toInt(n){
+  return Math.round(Number(n));
 }

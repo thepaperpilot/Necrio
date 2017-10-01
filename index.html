@@ -7,6 +7,10 @@
 <link rel="stylesheet" type="text/css" href="css/index.css">
 <body style="margin: 0; background-color: #2a323d;">
   <div id="intro" class="blackout submitted">
+    <div style="margin: auto; position: absolute; width: 100%; top: 10%">
+      <p class="title">Necrio</p>
+      <p class="subtitle">By Team NaN</p>
+    </div>
     <form id="nameForm">
       <input type="text" id="name" placeholder="Name" disabled autocomplete="off">
     </form>
@@ -14,8 +18,8 @@
   <div id="loading" class="blackout" style="z-index: 0">
     <p>Loading</p>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.5.1/pixi.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="lib/pixi.min.js"></script>
   <script src="lib/pixi-particles.min.js"></script>
   <script src="js/index.js"></script>
 </body>

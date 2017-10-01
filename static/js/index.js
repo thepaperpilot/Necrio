@@ -34,7 +34,7 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 
 	let username
 
-	socket.on('init', (me) => {
+	socket.on('init', (me, width, height) => {
 		console.log(me)
 		user = me
 		let text = new Text(user.name ? user.name + "\n▼" : '', getTextStyle(user.color))
@@ -49,6 +49,38 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 		}
 		ui.addChild(text)
 		gameLoop();
+
+		// Create grid
+		let g = new Graphics()
+		let padding = 10
+		let spacing = 10
+
+		g.lineStyle(2, 0x242a33, 1)
+		g.moveTo(-padding, -padding)
+		g.lineTo(width + padding, -padding)
+		g.lineTo(width + padding, height + padding)
+		g.lineTo(-padding, height + padding)
+		g.lineTo(-padding, -padding)
+
+		for (let i = -padding; i < width + padding; i += spacing) {
+			if ((i + padding) % (10 * spacing) === 0)
+				g.lineStyle(2, 0x242a33, 1)
+			else
+				g.lineStyle(1, 0x242a33, 1)
+			g.moveTo(i, -padding)
+			g.lineTo(i, height + padding)
+		}
+		for (let i = -padding; i < height + padding; i += spacing) {
+			if ((i + padding) % (10 * spacing) === 0)
+				g.lineStyle(2, 0x242a33, 1)
+			else
+				g.lineStyle(1, 0x242a33, 1)
+			g.moveTo(-padding, i)
+			g.lineTo(width + padding, i)
+		}
+
+		stage.addChildAt(g, 0)
+
 		document.addEventListener('mousemove', onMouseUpdate, false);
 		document.addEventListener('mouseenter', onMouseUpdate, false);
 		document.addEventListener('mousedown', onMouseDown, false);
@@ -203,32 +235,6 @@ function setup() {
 	document.getElementById('loading').classList.add('submitted')
 	document.getElementById('name').disabled = false
 	document.getElementById('name').focus()
-
-	// Create grid
-	let g = new Graphics()
-	let width = 2000
-	let height = 1000
-	let padding = 10
-	let spacing = 10
-
-	g.lineStyle(2, 0x242a33, 1)
-	g.moveTo(-padding, -padding)
-	g.lineTo(width + padding, -padding)
-	g.lineTo(width + padding, height + padding)
-	g.lineTo(-padding, height + padding)
-	g.lineTo(-padding, -padding)
-
-	g.lineStyle(1, 0x242a33, 1)
-	for (let i = -padding; i < width + padding; i += spacing) {
-		g.moveTo(i, -padding)
-		g.lineTo(i, height + padding)
-	}
-	for (let i = -padding; i < height + padding; i += spacing) {
-		g.moveTo(-padding, i)
-		g.lineTo(width + padding, i)
-	}
-
-	stage.addChildAt(g, 0)
 }
 
 function generateColoredTexture(string, color) {

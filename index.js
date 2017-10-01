@@ -13,8 +13,8 @@ let users = {};
 let minions = []
 let numMinions = 0
 
-let WIDTH = 2000;
-let HEIGHT = 1000;
+let WIDTH = 1980;
+let HEIGHT = 980;
 let SPEED = 0.1;
 let MAX_VELOCITY = 2;
 let LEADER_WEIGHT = 10;
@@ -26,7 +26,7 @@ io.on('connection', function(socket){
   socket.on('login', function(name){
     name = name || "Lazy person #" + Math.floor(Math.random() * 1000)
     let user = new User(socket.id, name)
-  	socket.emit('init', user)
+  	socket.emit('init', user, WIDTH, HEIGHT)
   	let keys = Object.keys(users)
   	for (let i = 0; i < keys.length; i++) {
   		socket.emit('add player', keys[i], users[keys[i]])

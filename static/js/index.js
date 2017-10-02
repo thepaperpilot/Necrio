@@ -113,6 +113,9 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 				stage.removeChild(users[id].minions[minKeys[i]].sprite)
 			}
 			delete users[id]
+		} else if (user.minions[Object.keys(user.minions)[0]].id === id) {
+			// We died
+			window.location.reload()
 		}
 	})
 
@@ -124,6 +127,7 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 			for (let j = 0; j < minKeys.length; j++) {
 				if (!theirUsers[keys[i]].minions[minKeys[j]]) {
 					// remove enemy
+					console.log("removing", minKeys[j])
 					stage.removeChild(u.minions[minKeys[j]].sprite)
 					delete u.minions[minKeys[j]]
 				} else {
@@ -134,6 +138,7 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 			for (let j = 0; j < minKeys.length; j++) {
 				if (!u.minions[minKeys[j]]) {
 					// add enemy
+					console.log("adding", minKeys[j])
 					setupMinion(theirUsers[keys[i]].minions[minKeys[j]], u.color)
 					u.minions[minKeys[j]] = theirUsers[keys[i]].minions[minKeys[j]]
 				}
@@ -333,7 +338,7 @@ function setupMinion(minion, color) {
 		this.x = this.sprite.x = minion.x
 		this.y = this.sprite.y = minion.y
 		let angle = Math.atan2(minion.vy, minion.vx)
-	    if (minion.vx < 0 && minion.vy >= 0) {
+	    /*if (minion.vx < 0 && minion.vy >= 0) {
 	        angle = Math.PI - angle;
 	    }
 	    if (minion.vx <= 0 && minion.vy < 0) {
@@ -341,25 +346,28 @@ function setupMinion(minion, color) {
 	    }
 	    if (minion.vx > 0 && minion.vy <= 0) {
 	        angle = (Math.PI * 2) - angle;
+	    }*/
+	    if (angle < 0) {
+	    	angle += Math.PI * 4
 	    }
 		let texture = minion.sprite
 		angle = (angle * 180 / Math.PI) % 360
 		if (angle < 22.5) {
 			texture += "_E"
 		} else if (angle < 67.5) {
-			texture += "_NE"
+			texture += "_SE"
 		} else if (angle < 112.5) {
-			texture += "_N"
+			texture += "_S"
 		} else if (angle < 157.5) {
-			texture += "_NW"
+			texture += "_SW"
 		} else if (angle < 202.5) {
 			texture += "_W"
 		} else if (angle < 247.5) {
-			texture += "_SW"
+			texture += "_NW"
 		} else if (angle < 292.5) {
-			texture += "_S"
+			texture += "_N"
 		} else if (angle < 337.5) {
-			texture += "_SE"
+			texture += "_NE"
 		}
 		if (!TextureCache[texture + color])
 			generateColoredTexture(texture, color)

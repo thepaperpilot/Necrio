@@ -14,8 +14,8 @@ let minions = []
 let numMinions = 0
 
 let PORT = 3000;
-let WIDTH = 280;
-let HEIGHT = 180;
+let WIDTH = 980;
+let HEIGHT = 980;
 let SPEED = 0.1;
 let MAX_VELOCITY = 2;
 let LEADER_WEIGHT = 10;

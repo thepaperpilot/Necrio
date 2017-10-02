@@ -68,14 +68,14 @@ http.listen(PORT, function(){
   //setInterval(regroup, 1000 / 0.5) // 0.5 times a second / Once every 2 seconds
 });
 
-function User(id, name) {
+function User(id, name, startingMinions) {
 	this.name = name;
 	this.x = Math.random() * WIDTH;
 	this.y = Math.random() * HEIGHT;
   this.color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
   this.minions = {};
   this.leader = 'm' + numMinions
-  for (let i = 0; i < STARTING_MINIONS; i++) {
+  for (let i = 0; i < (startingMinions || STARTING_MINIONS); i++) {
     this.minions['m' + numMinions] = new Minion(this.x + Math.random() * 20 - 10, this.y + Math.random() * 20 - 10)
     this.minions['m' + numMinions].user = id
     minions['m' + numMinions] = this.minions['m' + numMinions]
@@ -254,7 +254,7 @@ function spawnNPC() {
   let keys = Object.keys(users)
   if (keys.length > 0 && keys.length < USER_FILL) {
     let id = Math.floor(Math.random() * 10000000)
-    let user = new User(id, "")
+    let user = new User(id, "", Math.floor(Math.random() * 3))
     users[id] = user
     io.emit('add player', id, user)
     user.npc = true

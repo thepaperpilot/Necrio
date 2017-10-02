@@ -35,7 +35,6 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 	let username
 
 	socket.on('init', (me, width, height) => {
-		console.log(me)
 		user = me
 		let text = new Text(user.name ? user.name + "\n▼" : '', getTextStyle(user.color))
 		text.x = user.x
@@ -88,11 +87,10 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 	})
 
 	socket.on('disconnect', () => {
-		window.location.reload()
+		setTimeout(() => {window.location.reload()}, 1000)
 	})
 
 	socket.on('add player', (id, user) => {
-		console.log('added', user.name)
 		users[id] = user
 		let text = new Text(user.name ? user.name + "\n▼" : '', getTextStyle(user.color))
 		text.x = user.x
@@ -109,7 +107,6 @@ document.getElementById('nameForm').addEventListener('submit', function(e) {
 
 	socket.on('remove player', (id) => {
 		if (users[id]) {
-			console.log('removed', users[id].name)
 			ui.removeChild(users[id].text)
 			let minKeys = Object.keys(users[id].minions)
 			for (let i = 0; i < minKeys.length; i++) {
@@ -207,6 +204,7 @@ gameStage.addChild(stage);
 gameStage.addChild(ui);
 stage.interactive = true;
 let renderer = autoDetectRenderer(1, 1, {antialias: true, transparent: true});
+let secondary = autoDetectRenderer(1, 1); // used for texture generation
 document.body.appendChild(renderer.view);
 
 // Make the game fit the entire window
@@ -261,10 +259,10 @@ function setup() {
 function generateColoredTexture(string, color) {
 	let temp = new Container()
 	temp.addChild(new Sprite(TextureCache[string]))
-	console.log(TextureCache, string)
-	let temp2 = autoDetectRenderer(TextureCache[string].orig.width, TextureCache[string].orig.height);
-	temp2.render(temp)
-	let pixels = temp2.plugins.extract.pixels(temp)
+	secondary.clear()
+	secondary.resize(TextureCache[string].orig.width, TextureCache[string].orig.width)
+	secondary.render(temp)
+	let pixels = secondary.plugins.extract.pixels(temp)
 
   /*
 	// Pixel to get replaced
@@ -286,7 +284,7 @@ function generateColoredTexture(string, color) {
 	}
   */
 
-  // Grayscale colorizer
+  	// Grayscale colorizer
 	for (let i = 0; i < pixels.length; i += 4) {
 		if (pixels[i] === pixels[i+1] &&
 			pixels[i] === pixels[i+2] &&
@@ -305,10 +303,10 @@ function generateColoredTexture(string, color) {
 		}
 	}
 
-	var canvas = document.createElement('canvas');
-	canvas.width = 16;
-	canvas.height = 16;
+	let canvas = document.createElement('canvas')
 	var ctx = canvas.getContext('2d');
+	canvas.width = TextureCache[string].orig.width
+	canvas.height = TextureCache[string].orig.height
 	var pix = ctx.createImageData(canvas.width, canvas.height);
 	let inc = 0
 	for (var y = 0; y < canvas.height; y++) {
@@ -536,7 +534,6 @@ function scalarProjection(minionx, miniony) {
 
 // https://stackoverflow.com/questions/21646738/convert-hex-to-rgba
 function hexToRgbA(hex){
-	console.log(hex)
     var c;
     if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
         c= hex.substring(1).split('');

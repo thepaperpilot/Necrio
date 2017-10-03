@@ -116,21 +116,6 @@ function step() {
         leader.vx = Math.cos(angle) * MAX_VELOCITY
         leader.vy = Math.sin(angle) * MAX_VELOCITY
       }
-      let minKeys = Object.keys(users[keys[i]].minions)
-      for (let j = 0; j < minKeys.length; j++) {
-        let m1 = users[keys[i]].minions[minKeys[j]]
-        if (m1.target) {
-          let m2 = minions[m1.target]
-          let vx = m1.x - m2.x
-          let vy = m1.y - m2.y
-          let comWidth = m1.width / 2 + m2.width / 2
-          let comHeight = m1.height / 2 + m2.height / 2
-          if (Math.abs(vx) < comWidth + m1.aggro && Math.abs(vy) < comHeight + m1.aggro) {
-            m1.target = null
-            m1.attackTime = 0
-          }
-        }
-      }
     } else {
       leader.vx *= 0.9
       leader.vy *= 0.9
@@ -146,6 +131,17 @@ function step() {
     for (let j = 0; j < minKeys.length; j++) {
       if (users[keys[i]].leader === minKeys[j]) continue
       let minion = users[keys[i]].minions[minKeys[j]]
+      if (minion.target) {
+        let m2 = minions[minion.target]
+        let vx = minion.x - m2.x
+        let vy = minion.y - m2.y
+        let comWidth = minion.width / 2 + m2.width / 2
+        let comHeight = minion.height / 2 + m2.height / 2
+        if (Math.abs(vx) < comWidth + minion.aggro && Math.abs(vy) < comHeight + minion.aggro || minion.user === m2.user) {
+          minion.target = null
+          minion.attackTime = 0
+        }
+      }
       let x = 0, y = 0
       let closest = []
       for (let k = 0; k < minKeys.length; k++) {
@@ -217,7 +213,7 @@ function step() {
     }
     m1.x = Math.min(Math.max(m1.x, 0), WIDTH)
     m1.y = Math.min(Math.max(m1.y, 0), HEIGHT)
-    if (m1.target) {
+    if (m1.target && m1.user !== minions[m1.target].user) {
       m1.attackTime++
       if (m1.attackTime >= m1.attackDuration && users[m1.user] && users[minions[m1.target].user]) {
         m1.attackTime = 0
@@ -228,9 +224,9 @@ function step() {
           if (users[m2.user].leader === m1.target && Object.keys(users[m2.user].minions).length !== 0) {
             users[m2.user].leader = Object.keys(users[m2.user].minions)[0]
           }
-          m2.health  = m2.maxHealth
-          delete users[m2.user].minions[minKeys[i]]
-          users[m1.user].minions[minKeys[i]] = m2
+          m2.health = m2.maxHealth
+          delete users[m2.user].minions[m1.target]
+          users[m1.user].minions[m1.target] = m2
           if (Object.keys(users[m2.user].minions).length === 0) {
             removePlayer(m2.user)
           }
@@ -243,7 +239,7 @@ function step() {
 
   // Update players
   for (let i = 0; i < keys.length; i++) {
-    if (users[keys[i]].updated) {
+    if (users[keys[i]] && users[keys[i]].updated) {
       io.to(keys[i]).emit("update", users);
       users[keys[i]].updated = false;
     }
